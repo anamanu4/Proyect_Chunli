@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -11,7 +12,9 @@ public class PlayerController : MonoBehaviour
    
     private Rigidbody2D _rb;
 
-    private Animator _animController; 
+    private Animator _animController;
+
+    public GameObject attackTrigger; 
 
 
     private void Start()
@@ -68,13 +71,15 @@ public class PlayerController : MonoBehaviour
         // Rotacion del personaje 
         if (Input.GetKey(KeyCode.D))
         {
-            transform.rotation = Quaternion.Euler(0f, 180f, 0f); 
+            transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+            attackTrigger.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
             _animController.SetBool("isWalking", true);
 
         }
         else if (Input.GetKey(KeyCode.A))
         {
             transform.rotation = Quaternion.Euler(0f, 0f, 0f); 
+            attackTrigger.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
             _animController.SetBool("isWalking", true);
 
         }
@@ -82,5 +87,31 @@ public class PlayerController : MonoBehaviour
         {
             _animController.SetBool("isWalking", false);
         }
+        
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            StartCoroutine(Attack());
+        }
     }
+
+    public IEnumerator Attack()
+    {
+        if (Input.GetKeyDown(KeyCode.Q) && attackTrigger.GetComponent<AttackTrigger>().enemyInRange && !_animController.GetBool("attack"))
+        {
+            Debug.Log("Se hizo daño al enemigo");
+            _animController.SetBool("attack", true);
+            Destroy(attackTrigger.GetComponent<AttackTrigger>().enemy);
+        }
+        else if (Input.GetKeyDown(KeyCode.Q) && !attackTrigger.GetComponent<AttackTrigger>().enemyInRange && !_animController.GetBool("attack"))
+        {
+            _animController.SetBool("attack", true);
+            Debug.Log("Se golpeo a legarda");
+        }
+
+        yield return new WaitForSecondsRealtime(0.3f);
+            
+        _animController.SetBool("attack", false);
+    }
+    
+    
 }
